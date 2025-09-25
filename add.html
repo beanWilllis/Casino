@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add Money
+{% endblock %}
+
+{% block main %}
+
+    <div class="section-buy">
+        <form action="/add" id="add" method="post">
+            <p id="error" style="color:red"></p>
+            <div class="mb-3">
+                <input autocomplete="off" style="margin:25px;" autofocus class="form-control mx-auto w-auto" id="dollars" name="dollars" placeholder="Dollars" type="text">
+            </div>
+            <div class="mb-3">
+                <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="cents" name="cents" placeholder="Cents" type="text">
+            </div>
+            <button type="submit" style="padding:7px;background-color:#ffffff;">Add</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('add').addEventListener('submit', function() {
+
+            let dollars = document.getElementById('dollars').value
+            let cents = document.getElementById('cents').value
+
+            console.log(cents)
+
+            if (dollars.trim() == "" | cents.trim() == "") {
+                document.getElementById('error').innerHTML = 'No blank entries allowed';
+                document.getElementById('add').setAttribute('action', 'javascript:void(0);');
+            }
+            else if (isNaN(Number(dollars)) | isNaN(Number(cents))) {
+                document.getElementById('error').innerHTML = 'Input must be numeric';
+                document.getElementById('add').setAttribute('action', 'javascript:void(0);');
+            }
+            else if (cents.length != 2) {
+                document.getElementById('error').innerHTML = 'Cents field must have 2 digits';
+                document.getElementById('add').setAttribute('action', 'javascript:void(0);');
+            }
+            else if (parseInt(dollars) < 0 | parseInt(cents) < 0) {
+                document.getElementById('error').innerHTML = 'Must be positive';
+                document.getElementById('add').setAttribute('action', 'javascript:void(0);');
+            }
+            else {
+                document.getElementById('add').setAttribute('action', '/add');
+            }
+        })
+    </script>
+
+{% endblock %}
