@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="/static/login.css" rel="stylesheet">
+    </head>
+    <body>
+        <section class="section-login">
+            <header>
+                <img src="/static/poker-logo.jpg" width ="90" height="90">
+            </header>
+            <h1>{% block body %}{% endblock %}</h1>
+            <form action="/login" method="post" id="login">
+                <div>
+                    <input autocomplete="off" autofocus id="username" name="username" placeholder="Username" type="text">
+                    <p id="under_username"></p>
+                </div>
+                <div>
+                    <input autocomplete="off" id="password" name="password" placeholder="Password" type="password">
+                    <p id="under_password"></p>
+                </div>
+                <div>
+                    <button type="sumbit">Log In</button>
+                </div>
+                <h2><span>or</span></h2>
+            </form>
+            <script>
+                username = document.getElementById('username');
+                password = document.getElementById('password');
+                document.getElementById('login').addEventListener('submit', function() {
+                    if (username.value.trim() == "") {
+                        username.style.borderColor = 'red';
+                        document.getElementById('under_username').innerHTML = 'This field is required';
+                    }
+                    else if (username.value.trim() != "") {
+                        username.style.borderColor = 'gray';
+                        document.getElementById('under_username').innerHTML = '';
+                    }
+                    if (password.value.trim() == "") {
+                        password.style.borderColor = 'red';
+                        document.getElementById('under_password').innerHTML = 'This field is required';
+                    }
+                    else if (password.value.trim() != "") {
+                        password.style.borderColor = 'gray';
+                        document.getElementById('under_password').innerHTML = '';
+                    }
+                    if (username.value.trim() == "" | password.value.trim() == "") {
+                        document.getElementById('login').setAttribute('action', 'javascript:void(0);');
+                    }
+                    else if (username.value.trim() != "" && password.value.trim() != "") {
+                        document.getElementById('login').setAttribute('action', '/login');
+                    }
+                })
+            </script>
+            <form action="/register" method="get">
+                <div>
+                    <button type="sumbit">Sign Up</button>
+                </div>
+            </form>
+        </section>
+    </body>
+</html>

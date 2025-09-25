@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Betting
+{% endblock %}
+
+{% block main %}
+    <div class="section-buy">
+        <div style="text-align:center;color:white;font-size:20px;" id="cash">
+            Cash: {{ cash }}
+        </div>
+        <div style="color:red">Not enough cash</div>
+        <form action="/blackjack-betting" method="get" style="text-align:center">
+            <select name="dollars" style="padding:10px 20px;">
+                {% for choice in choices %}
+                    <option>{{ choice }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" style="padding:10px 30px;margin:15px;background-color:#ffffff;">Play Blackjack</button>
+        </form>
+        <form action="/" method="get" style="text-align:center;">
+            <button type="submit" style="padding:10px 30px;background-color:#ffffff;">Home</button>
+        </form>
+    </div>
+
+{% endblock %}

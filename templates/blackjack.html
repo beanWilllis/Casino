@@ -1,0 +1,205 @@
+{% extends "game.html" %}
+
+{% block title %}
+    Play Blackjack
+{% endblock %}
+
+{% block main %}
+
+    <div class="player" id="player">
+        <form onsubmit="return false">
+            <button class="player-input-btn" type="submit" id="hit">Hit</button>
+            <button class="player-input-btn" type="submit" id="stand">Stand</button>
+        </form>
+        <h1 id="status" style="color:red;margin:10px;"></h1>
+        <h3 style="color:white">Your Cards: </h3>
+        <p>Your value: <span id="player_value"></span></p>
+    </div>
+    <div class="dealer" id="dealer">
+        <form action="/blackjack-betting" class="end-game" method="POST">
+            <button class="player-input-btn" name="again" id="again" type="submit" style="display:none" onclick="status();">Play Again</button>
+        </form>
+        <h3 style="color:white;margin:30px;">Dealer's Cards</h3>
+        <p>Dealer's Value: <span id="dealer_value"></span></p>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+
+        function status() {
+            status = document.getElementById('status').innerHTML;
+            document.getElementById('again').value = status;
+        };
+
+        function number(card, value) {
+            if (card == 'JACK' | card == 'QUEEN' | card == 'KING') {
+                return 10;
+            }
+            else if (card == 'ACE') {
+                if (value + 11 > 21) {
+                    return 1;
+                }
+                else {
+                    return 11;
+                }
+            }
+            else {
+                return parseInt(card);
+            }
+        }
+
+        function compare(dealer_value, player_value) {
+
+            if (dealer_value > 21) {
+                document.getElementById('hit').style.display = 'none';
+                document.getElementById('stand').style.display = 'none';
+                document.getElementById('status').innerHTML = 'Win';
+                document.getElementById('again').style.display = 'inline';
+                document.getElementById('quit').style.display = 'inline';
+            }
+
+            else if (dealer_value > player_value) {
+                document.getElementById('hit').style.display = 'none';
+                document.getElementById('stand').style.display = 'none';
+                document.getElementById('status').innerHTML = 'Lose';
+                document.getElementById('again').style.display = 'inline';
+                document.getElementById('quit').style.display = 'inline';
+            }
+
+            else if (player_value > dealer_value) {
+                document.getElementById('hit').style.display = 'none';
+                document.getElementById('stand').style.display = 'none';
+                document.getElementById('status').innerHTML = 'Win';
+                document.getElementById('again').style.display = 'inline';
+                document.getElementById('quit').style.display = 'inline';
+            }
+
+            else if (player_value == dealer_value) {
+                document.getElementById('hit').style.display = 'none';
+                document.getElementById('stand').style.display = 'none';
+                document.getElementById('status').innerHTML = 'Tie';
+                document.getElementById('again').style.display = 'inline';
+                document.getElementById('quit').style.display = 'inline';
+            }
+        }
+
+        function test(callback) {
+            $.getJSON('https://www.deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1', function (deck) {
+                callback(deck);
+            });
+        }
+
+        test(function (deck) {
+            $.getJSON(`https://www.deckofcardsapi.com/api/deck/${deck['deck_id']}/draw/?count=4`, function (cards) {
+
+                const myImage1 = new Image();
+                myImage1.src = cards['cards'][0]['image'];
+                myImage1.className = 'center';
+                document.getElementById('player').appendChild(myImage1);
+
+                const myImage2 = new Image();
+                myImage2.src = cards['cards'][1]['image'];
+                myImage2.className = 'center';
+                document.getElementById('player').appendChild(myImage2);
+
+                var player_value = number(cards['cards'][0]['value'], 0) + number(cards['cards'][1]['value'], number(cards['cards'][0]['value'], 0));
+                document.getElementById('player_value').innerHTML = player_value;
+
+                const myImage3 = new Image();
+                myImage3.src = cards['cards'][2]['image'];
+                myImage3.className = 'center';
+                document.getElementById('dealer').appendChild(myImage3);
+
+                const myImage4 = new Image();
+                myImage4.src = 'https://www.deckofcardsapi.com/static/img/back.png';
+                myImage4.className = 'center';
+                document.getElementById('dealer').appendChild(myImage4);
+
+                var dealer_value = number(cards['cards'][2]['value'], 0) + number(cards['cards'][3]['value'], number(cards['cards'][2]['value'], 0));
+
+                if (player_value == 21 && dealer_value == 21) {
+                    document.getElementById('hit').style.display = 'none';
+                    document.getElementById('stand').style.display = 'none';
+                    document.getElementById('status').innerHTML = 'Tie';
+                    myImage4.src = cards['cards'][3]['image'];
+                    document.getElementById('again').style.display = 'inline';
+                    document.getElementById('quit').style.display = 'inline';
+                    document.getElementById('dealer_value').innerHTML = dealer_value;
+                }
+                else if (player_value == 21) {
+                    document.getElementById('hit').style.display = 'none';
+                    document.getElementById('stand').style.display = 'none';
+                    document.getElementById('status').innerHTML = 'Win by Blackjack';
+                    myImage4.src = cards['cards'][3]['image'];
+                    document.getElementById('again').style.display = 'inline';
+                    document.getElementById('quit').style.display = 'inline';
+                    document.getElementById('dealer_value').innerHTML = dealer_value;
+                }
+                else if (dealer_value == 21) {
+                    document.getElementById('hit').style.display = 'none';
+                    document.getElementById('stand').style.display = 'none';
+                    document.getElementById('status').innerHTML = 'Lose by Blackjack';
+                    myImage4.src = cards['cards'][3]['image'];
+                    document.getElementById('again').style.display = 'inline';
+                    document.getElementById('quit').style.display = 'inline';
+                    document.getElementById('dealer_value').innerHTML = dealer_value;
+                }
+
+                console.log(8)
+
+                document.getElementById('stand').addEventListener('click', function() {
+
+                    myImage4.src = cards['cards'][3]['image'];
+
+                    function dealer() {
+                        if (dealer_value < 17) {
+
+                            $.getJSON(`https://www.deckofcardsapi.com/api/deck/${deck['deck_id']}/draw/?count=1`, function (card) {
+
+                                dealer_value += number(card['cards'][0]['value'], dealer_value);
+                                document.getElementById('dealer_value').innerHTML = dealer_value;
+
+                                const myImage = new Image();
+                                myImage.src = card['cards'][0]['image'];
+                                myImage.className = 'center';
+                                document.getElementById('dealer').appendChild(myImage);
+
+                                dealer()
+
+                            });
+                        }
+                        else {
+                            document.getElementById('dealer_value').innerHTML = dealer_value;
+                            compare(dealer_value, player_value)
+                        }
+                    }
+
+                    dealer()
+
+                });
+
+                document.getElementById('hit').addEventListener('click', function() {
+                    $.getJSON(`https://www.deckofcardsapi.com/api/deck/${deck['deck_id']}/draw/?count=1`, function (card) {
+
+                        const myImage = new Image();
+                        myImage.src = card['cards'][0]['image'];
+                        myImage.className = 'center';
+                        document.getElementById('player').appendChild(myImage);
+
+                        player_value += number(card['cards'][0]['value'], player_value);
+                        document.getElementById('player_value').innerHTML = player_value;
+
+                        if (player_value > 21) {
+                            document.getElementById('hit').style.display = 'none';
+                            document.getElementById('stand').style.display = 'none';
+                            document.getElementById('status').innerHTML = 'Bust';
+                            document.getElementById('again').style.display = 'inline';
+                            document.getElementById('quit').style.display = 'inline';
+                        }
+                    });
+                });
+            });
+        });
+
+    </script>
+{% endblock %}

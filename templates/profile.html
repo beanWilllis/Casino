@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block main %}
+
+    <div class="section-buy">
+        <div style="text-align:center;color:white;font-size:20px;margin:15px;" id="cash">
+            Cash: {{ cash }}
+        </div>
+        <form action="/reset" method="get">
+            <button style="margin:15px;padding:7px;background-color:#ffffff;">Reset Password</button>
+        </form>
+        <form action="/add" method="get">
+            <button style="padding:7px;background-color:#ffffff;">Add Funds</button>
+        </form>
+    </div>
+
+{% endblock %}

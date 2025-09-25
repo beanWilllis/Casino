@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Reset Password
+{% endblock %}
+
+{% block main %}
+
+    <div class="section-buy">
+        <form action="/reset" method="post" id="reset">
+            <p id="error" style="color:red"></p>
+            <div class="mb-3">
+                <input class="form-control mx-auto w-auto" id="new" name="new" placeholder="New Password" type="password" style="margin:20px">
+            </div>
+            <div class="mb-3">
+                <input class="form-control mx-auto w-auto" id="confirmation" name="confirmation" placeholder="Confirm New Password" type="password">
+            </div>
+            <button type="submit" style="padding:7px;background-color:#ffffff;">Reset Password</button>
+        </form>
+    </div>
+
+    <script>
+
+        document.getElementById('reset').addEventListener('submit', function() {
+
+            let pass = document.getElementById('new').value
+            let confirmation = document.getElementById('confirmation').value
+
+            if (pass.trim() == "" | confirmation.trim() == "") {
+                document.getElementById('error').innerHTML = 'No blank entries allowed';
+                document.getElementById('reset').setAttribute('action', 'javascript:void(0);');
+            }
+            else if (pass != confirmation) {
+                document.getElementById('error').innerHTML = 'Passwords must equal';
+                document.getElementById('reset').setAttribute('action', 'javascript:void(0);');
+            }
+            else {
+                document.getElementById('reset').setAttribute('action', '/reset');
+            }
+        })
+
+    </script>
+
+{% endblock %}

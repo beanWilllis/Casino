@@ -1,0 +1,232 @@
+{% extends "game.html" %}
+
+{% block title %}
+    Play Poker
+{% endblock %}
+
+{% block main %}
+
+    <div class="player" id="player">
+        <h1 id="status" style="color:red;margin:10px;"></h1>
+        <h3 style="color:white">Your Cards: </h3>
+        <p id="player_hand" style="padding:10px;"></p>
+    </div>
+    <div class="dealer" id="dealer">
+        <form onsubmit="return false" class="end-game">
+            <button class="player-input-btn" id="play" type="submit">Play</button>
+        </form>
+        <form onsubmit="return false" action="/poker" class="end-game" method="GET">
+            <button class="player-input-btn" id="fold" type="submit">Fold</button>
+        </form>
+        <form action="/poker-betting" class="end-game" method="POST">
+            <button class="player-input-btn" id="again" name="again" type="submit" style="display:none" onclick="status();">Next</button>
+        </form>
+        <h3 style="color:white;margin:30px;">Dealer's Cards:</h3>
+        <p id="dealer_hand"></p>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+
+        function status()
+            {
+                status = document.getElementById('status').innerHTML;
+                document.getElementById('again').value = status;
+            };
+
+        function number(card) {
+            if (card == 'ACE') {
+                return 14;
+            }
+            else if (card == 'KING') {
+                return 13;
+            }
+            else if (card == 'QUEEN') {
+                return 12;
+            }
+            else if (card == 'JACK') {
+                return 11;
+            }
+            else {
+                return parseInt(card);
+            }
+        }
+
+        function card_name(value) {
+            if (value == 14) {
+                return 'Ace';
+            }
+            else if (value == 13) {
+                return 'King';
+            }
+            else if (value == 12) {
+                return 'Queen';
+            }
+            else if (value == 11) {
+                return 'Jack';
+            }
+            else {
+                return value;
+            }
+        }
+
+        function test(callback) {
+            $.getJSON('https://www.deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1', function (deck) {
+                callback(deck);
+            });
+        }
+
+        test(function (deck) {
+            $.getJSON(`https://www.deckofcardsapi.com/api/deck/${deck['deck_id']}/draw/?count=6`, function (cards) {
+
+                window.addEventListener('load', function() {
+                    window.scrollTo(0,document.body.scrollHeight);
+                });
+
+                dealer_values = [];
+                dealer_suits = [];
+                player_values = [];
+                player_suits = [];
+                images = []
+
+                for (let i = 0; i < 3; i++) {
+                    const myImage = new Image();
+                    myImage.src = cards['cards'][i]['image'];
+                    myImage.className = 'center';
+                    document.getElementById('player').appendChild(myImage);
+                    player_values.push(number(cards['cards'][i]['value']));
+                    player_suits.push(cards['cards'][i]['suit']);
+                    images.push(myImage);
+                }
+                for (let i = 3; i < 6; i++) {
+                    const myImage = new Image();
+                    myImage.src = 'https://www.deckofcardsapi.com/static/img/back.png';
+                    myImage.className = 'center';
+                    document.getElementById('dealer').appendChild(myImage);
+                    dealer_values.push(number(cards['cards'][i]['value']));
+                    dealer_suits.push(cards['cards'][i]['suit']);
+                    images.push(myImage);
+                }
+
+                player_values.sort(function(a, b) {
+                    return a - b;
+                });
+
+                dealer_values.sort(function(a, b) {
+                    return a - b;
+                });
+
+                function hand(values, suits) {
+                    if ((values[0] + 1 == values[1]) && (values[1] + 1 == values[2]) && (suits[0] === suits[1]) && (suits[1] === suits[2])) {
+                        return 1;
+                    }
+                    else if (values[0] == values[1] && values[1] == values[2]) {
+                        return 2;
+                    }
+
+                    else if ((values[0] + 1 == values[1]) && (values[1] + 1 == values[2])) {
+                        return 3;
+                    }
+
+                    else if (suits[0] === suits[1] && suits[1] === suits[2]) {
+                        return 4;
+                    }
+
+                    else if (values[0] == values[1] | values[1] == values[2]) {
+                        return 5;
+                    }
+
+                    else {
+                        return 6;
+                    }
+                }
+
+                function hand_name(rank, high_card, middle_card) {
+                    if (rank == 1) {
+                        return `Straight flush ${high_card} high`;
+                    }
+                    else if (rank == 2) {
+                        return `Three-of-a-kind ${high_card} high`;
+                    }
+                    else if (rank == 3) {
+                        return `Straight ${high_card} high`;
+                    }
+                    else if (rank == 4) {
+                        return `Flush ${high_card} high`;
+                    }
+                    else if (rank == 5) {
+                        return `Pair of ${middle_card}s`
+                    }
+                    else {
+                        return `${high_card} high`;
+                    }
+                }
+
+                var player_rank = parseInt(hand(player_values, player_suits));
+                var dealer_rank = parseInt(hand(dealer_values, dealer_suits));
+
+                function compare(player_rank, player_values, dealer_rank, dealer_values) {
+                    if (dealer_rank == 6 && dealer_values[2] < 12) {
+                        return 'Push';
+                    }
+                    else if (player_rank < dealer_rank) {
+                        return 'Player wins';
+                    }
+                    else if (player_rank > dealer_rank) {
+                        return 'Dealer wins';
+                    }
+                    else {
+                        for (let i = 2; i >= 0; i--) {
+                            if (player_values[i] > dealer_values[i]) {
+                                return 'Player wins';
+                                break;
+                            }
+                            else if (player_values[i] < dealer_values[i]) {
+                                return 'Dealer wins'
+                                break;
+                            }
+                            else {
+                                if (i != 3) {
+
+                                }
+                                else {
+                                    return 'Tie'
+                                }
+                            }
+                        }
+                    }
+                }
+
+                document.getElementById('play').addEventListener('click', function() {
+                    for (let i = 3; i < 6; i++) {
+                        images[i].src = cards['cards'][i]['image'];
+                    }
+
+                    document.getElementById('status').innerHTML = compare(player_rank, player_values, dealer_rank, dealer_values);
+                    document.getElementById('dealer_hand').innerHTML = hand_name(dealer_rank, card_name(dealer_values[2]), card_name(dealer_values[1]));
+                    document.getElementById('play').style.display = 'none';
+                    document.getElementById('fold').style.display = 'none';
+                    document.getElementById('again').style.display = 'inline';
+                    document.getElementById('quit').style.display = 'inline';
+                });
+
+                document.getElementById('fold').addEventListener('click', function() {
+                    for (let i = 3; i < 6; i++) {
+                        images[i].src = cards['cards'][i]['image'];
+                    }
+
+                    document.getElementById('status').innerHTML = 'Dealer wins by fold';
+                    document.getElementById('dealer_hand').innerHTML = hand_name(dealer_rank, card_name(dealer_values[2]), card_name(dealer_values[1]));
+                    document.getElementById('play').style.display = 'none';
+                    document.getElementById('fold').style.display = 'none';
+                    document.getElementById('again').style.display = 'inline';
+                    document.getElementById('quit').style.display = 'inline';
+                });
+
+                document.getElementById('player_hand').innerHTML = hand_name(player_rank, card_name(player_values[2]), card_name(player_values[1]));
+
+            });
+        });
+
+    </script>
+{% endblock %}
